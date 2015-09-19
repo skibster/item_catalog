@@ -1,8 +1,24 @@
 """item_catalog.py generates a Python Flask website for Udacity's Full Stack Web Developer Nanodegree Project 3"""
 
 import os
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, exc
+from catalog import Base, Shelter, Puppy, Profile, Adopter
+from puppies import *
+#from flask.ext.sqlalchemy import SQLAlchemy
+import datetime
+import sys
+
+
+engine = create_engine('sqlite:///puppyshelter.db')
+
+Base.metadata.bind = engine
+ 
+DBSession = sessionmaker(bind=engine)
+
+session = DBSession()
 
 app = Flask(__name__)
 
