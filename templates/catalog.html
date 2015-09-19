@@ -1,0 +1,8 @@
+{% for category in categories %}
+  <h3>{{category.name}}</h3>
+{% endfor %}
+
+
+{% for last_item, category in last_items %}
+  <h5>{{last_item.name}} ({{category.name}})</h5>
+{% endfor %}
