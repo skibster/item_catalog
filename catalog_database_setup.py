@@ -1,9 +1,10 @@
 """Running this file creates the database required for the Item Catalog web application"""
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+import datetime
  
 Base = declarative_base()
 
@@ -20,7 +21,7 @@ class Category(Base):
     __tablename__ = 'category'
    
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), unique=True)
+    name = Column(String(250), unique=True, nullable = False)
     # user_id = Column(Integer,ForeignKey('user.id'))
     # user = relationship(User)
 
@@ -37,9 +38,10 @@ class Item(Base):
 
 
     id = Column(Integer, primary_key = True)
-    name =Column(String(80), unique=True)
-    description = Column(String(250))
+    name =Column(String(80), unique=True, nullable = False)
+    description = Column(String(250), nullable = False)
     image_url = Column(String(250))
+    last_updated = Column(DateTime, onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable = False)
     category_id = Column(Integer,ForeignKey('category.id'))
     category = relationship(Category)
     # user_id = Column(Integer,ForeignKey('user.id'))
