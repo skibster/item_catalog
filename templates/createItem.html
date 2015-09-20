@@ -1,0 +1,10 @@
+{% from "_formhelpers.html" import render_field %}
+<form method=post action="#">
+  {{ form.hidden_tag() }}
+  <dl>
+    {{ render_field(form.description) }}
+    {{ render_field(form.image_url) }}
+    {{ render_field(form.category) }}
+  </dl>
+  <p><input type=submit value=Create>
+</form>

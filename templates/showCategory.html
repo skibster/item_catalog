@@ -1,0 +1,18 @@
+<div class = 'flash'>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</div>
+<h2>Category: {{category.name}} ({{item_count}})</h2>
+<br/>
+{% for item in items %}
+  <p>{{item.name}}</p>
+  <p>{{item.description}}</p>
+  <p>{{item.image_url}}</p>
+{% endfor %}

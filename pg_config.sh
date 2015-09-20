@@ -6,8 +6,7 @@ pip install bleach
 pip install oauth2client
 pip install requests
 pip install httplib2
-pip install WTForms
+pip install Flask-WTF
 
-vagrantTip="The shared directory is located at /vagrant\nTo access your shared files: cd /vagrant"
+vagrantTip="\033[01;35mThe shared directory is located at /vagrant\nTo access your shared files: cd /vagrant\033[0m"
 echo -e $vagrantTip > /etc/motd
-
