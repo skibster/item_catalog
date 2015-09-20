@@ -23,7 +23,7 @@ app = Flask(__name__)
 @app.route('/catalog/')
 def showCatalog():
     categories = db_session.query(Category).order_by(asc(Category.name))
-    last_items = db_session.query(Item, Category).filter(Item.id==Category.id).order_by(desc(Item.last_updated)).limit(10)
+    last_items = db_session.query(Item, Category).filter(Item.category_id==Category.id).order_by(desc(Item.last_updated)).limit(10)
     return render_template('catalog.html', categories=categories, last_items=last_items )
 
 """This route shows all items for a particular category."""
@@ -46,10 +46,10 @@ def createItem(category_name):
 """This route allows a user to edit a specific item they created."""
 @app.route('/catalog/<string:item_name>/edit/')
 def editItem(item_name):
-    return "This page will allow the user to edit a the item: '%s'" % item_name
+    return "This page will allow the user to edit the item: '%s'" % item_name
 
 """This route allows a user to delete a specific item they created."""
-@app.route('/catalog/<string:item_name>/delete')
+@app.route('/catalog/<string:item_name>/delete/')
 def deleteItem(item_name):
     return "This page will allow the user to delete the item: %s" % item_name
 
