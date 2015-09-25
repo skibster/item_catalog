@@ -10,11 +10,12 @@
   {% endwith %}
 </div>
 
-{% for category in categories %}
-  <h3>{{category.name}}</h3>
-{% endfor %}
+<div>
+  {% for category in categories %}
+    <a href='/catalog/{{category.name}}/items'>{{category.name}}</a><br/>
+  {% endfor %}
 
-
-{% for last_item, category in last_items %}
-  <h5>{{last_item.name}} ({{category.name}})</h5>
-{% endfor %}
+  {% for last_item, category in last_items %}
+    <a href='/catalog/{{category.name}}/{{last_item.name}}'>{{last_item.name}}</a> ({{category.name}})<br/>
+  {% endfor %}
+</div>

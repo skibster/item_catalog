@@ -1,0 +1,6 @@
+<h2>Delete Item</h2>
+<p>Are you sure you want to delete: '{{item_name}}'</p>
+<form method="post" action="/catalog/{{item_name}}/delete/">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <input type="submit" value="Delete"> | <a href='/catalog/{{category_name}}/items'>Cancel</a>
+</form>

@@ -1,5 +1,5 @@
 {% from "_formhelpers.html" import render_field %}
-<form method="post" action="#">
+<form method="post" action="/catalog/{{item_name}}/edit/">
   {{ form.hidden_tag() }}
   <dl>
     {{ render_field(form.name) }}
@@ -7,5 +7,5 @@
     {{ render_field(form.image_url) }}
     {{ render_field(form.category) }}
   </dl>
-  <input type="submit" value="Create"> | <a href='/catalog/{{category_name}}/items'>Cancel</a>
+  <input type="submit" value="Update"> | <a href='/catalog/{{category_name}}/items'>Cancel</a>
 </form>
