@@ -1,6 +1,6 @@
 """item_catalog.py generates a Python Flask website for Udacity's Full Stack Web Developer Nanodegree Project 3"""
 
-import os
+import os, json
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session
 
 from flask_wtf.csrf import CsrfProtect
@@ -29,6 +29,30 @@ def showCatalog():
     categories = db_session.query(Category).order_by(asc(Category.name))
     last_items = db_session.query(Item, Category).filter(Item.category_id==Category.id).order_by(desc(Item.last_updated)).limit(10)
     return render_template('showCatalog.html', categories=categories, last_items=last_items )
+
+"""This route is the root of the web application and returns the catalog categories and top ten recent items."""
+@app.route('/')
+@app.route('/catalog/json')
+def jsonCatalog():
+    items = db_session.query(Category, Item).filter(Item.category_id==Category.id).all()
+    return jsonify(Category=[c.serialize for c, i in items], Item=[i.serialize for c, i in items])
+    
+    # def row2dict(row):
+    #     d = {}
+    #     for column in row.__table__.columns:
+    #       d[column.name] = str(getattr(row, column.name))
+    #     return d
+    # 
+    # finished_dict = []
+    # for c in db_session.query(Category).filter_by(id=3).all():
+    #     category_dict = ( row2dict(c) )
+    #     print category_dict
+    #     item_dict = []
+    #     for i in db_session.query(Item).filter_by(category_id=c.id).all():
+    #         item_dict.append( row2dict(i))
+    #     finished_dict.append(["Category", category_dict, ["Item", item_dict]])
+    # return json.dumps(finished_dict)
+
 
 """This route shows all items for a particular category."""
 @app.route('/catalog/<string:category_name>/items')
