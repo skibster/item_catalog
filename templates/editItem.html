@@ -1,10 +1,11 @@
 {% from "_formhelpers.html" import render_field %}
-<form method="post" action="/catalog/{{item_name}}/edit/">
+<form method="post" action="#" enctype="multipart/form-data">
   {{ form.hidden_tag() }}
   <dl>
     {{ render_field(form.name) }}
     {{ render_field(form.description) }}
-    {{ render_field(form.image_url) }}
+    <img src='/{{item.image_url}}' width="200" height="200" border="0">
+    {{ render_field(form.photo) }}
     {{ render_field(form.category) }}
   </dl>
   <input type="submit" value="Update"> | <a href='/catalog/{{category_name}}/items'>Cancel</a>
