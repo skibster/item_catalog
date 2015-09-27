@@ -10,7 +10,7 @@ from werkzeug import secure_filename
 
 from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker, exc
-from catalog_database_setup import Base, Category, Item
+from catalog_database_setup import Base, Category, Item, User
 
 
 engine = create_engine('sqlite:///catalog.db')
@@ -38,9 +38,6 @@ def showCatalog():
 def jsonCatalog():
     js = MakeDictionary()
     return jsonify(Category=js)
-# def jsonCatalog():
-#     js = MakeDictionary()
-#     return Response(json.dumps(js, indent=4, separators=(',', ': ')),  mimetype='application/json')
 
 """This route is the root of the web application and returns each catalog category with all of its items in XML."""
 @app.route('/catalog/xml')
