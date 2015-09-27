@@ -23,6 +23,8 @@ db_session = DBSession()
 
 app = Flask(__name__)
 
+MISSING_IMAGE = 'static/missing_image.png'
+
 """This route is the root of the web application and returns the catalog categories and top ten recent items."""
 @app.route('/')
 @app.route('/catalog')
@@ -73,7 +75,7 @@ def createItem(category_name):
         db_session.commit()
 
         # now add image_url storing the file under the item's ID
-        image_url='static/blank.png'
+        image_url= MISSING_IMAGE
         filename = secure_filename(form.photo.data.filename)
         if filename:
             image_dir = 'static/uploads/%s/' % newItem.id
@@ -107,8 +109,11 @@ def editItem(item_name):
         filename = secure_filename(form.photo.data.filename)
         if filename:
             old_image = item.image_url
-            os.remove(old_image)
+            if old_image != MISSING_IMAGE:
+                os.remove(old_image)
             image_dir = 'static/uploads/%s/' % item.id
+            if old_image == MISSING_IMAGE:
+                os.mkdir(image_dir)
             form.photo.data.save(image_dir + filename)
             image_url =  image_dir + filename
         
@@ -130,9 +135,11 @@ def deleteItem(item_name):
     category = db_session.query(Category).filter_by(id=item.category_id).one()
 
     if request.method == 'POST':
-        os.remove(item.image_url)
-        old_dir = 'static/uploads/%s/' % item.id
-        os.removedirs(old_dir)
+        old_image = item.image_url
+        if old_image != MISSING_IMAGE:
+            os.remove(old_image)
+            old_dir = 'static/uploads/%s/' % item.id
+            os.removedirs(old_dir)
         db_session.delete(item)
         db_session.commit()
         flash('Your item has been deleted.')
