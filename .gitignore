@@ -2,4 +2,5 @@
 *.pyc
 *.db
 .vagrant
+static/uploads/*
 

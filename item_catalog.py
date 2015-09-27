@@ -1,7 +1,8 @@
 """item_catalog.py generates a Python Flask website for Udacity's Full Stack Web Developer Nanodegree Project 3"""
 
-import os, json
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session
+import os
+import json, dicttoxml
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session, Response
 
 from flask_wtf.csrf import CsrfProtect
 from wt_form_functions import createItemForm, editItemForm
@@ -30,29 +31,20 @@ def showCatalog():
     last_items = db_session.query(Item, Category).filter(Item.category_id==Category.id).order_by(desc(Item.last_updated)).limit(10)
     return render_template('showCatalog.html', categories=categories, last_items=last_items )
 
-"""This route is the root of the web application and returns the catalog categories and top ten recent items."""
-@app.route('/')
+"""This route is the root of the web application and returns each catalog category with all of its items in JSON."""
 @app.route('/catalog/json')
 def jsonCatalog():
-    items = db_session.query(Category, Item).filter(Item.category_id==Category.id).all()
-    return jsonify(Category=[c.serialize for c, i in items], Item=[i.serialize for c, i in items])
-    
-    # def row2dict(row):
-    #     d = {}
-    #     for column in row.__table__.columns:
-    #       d[column.name] = str(getattr(row, column.name))
-    #     return d
-    # 
-    # finished_dict = []
-    # for c in db_session.query(Category).filter_by(id=3).all():
-    #     category_dict = ( row2dict(c) )
-    #     print category_dict
-    #     item_dict = []
-    #     for i in db_session.query(Item).filter_by(category_id=c.id).all():
-    #         item_dict.append( row2dict(i))
-    #     finished_dict.append(["Category", category_dict, ["Item", item_dict]])
-    # return json.dumps(finished_dict)
+    js = MakeDictionary()
+    return jsonify(Categories=js)
+# def jsonCatalog():
+#     js = MakeDictionary()
+#     return Response(json.dumps(js, indent=4, separators=(',', ': ')),  mimetype='application/json')
 
+"""This route is the root of the web application and returns each catalog category with all of its items in XML."""
+@app.route('/catalog/xml')
+def xmlCatalog():
+    xml = MakeDictionary()
+    return Response(dicttoxml.dicttoxml(xml),  mimetype='application/xml')
 
 """This route shows all items for a particular category."""
 @app.route('/catalog/<string:category_name>/items')
@@ -162,6 +154,19 @@ def login():
 @app.route('/catalog/logout/')
 def logout():
     return "This page will process the oAuth logoff."
+
+def MakeDictionary():
+    categories = db_session.query(Category).all()
+    finished_dict = []
+    for c in categories:
+        new_cat = c.serialize
+        items = db_session.query(Item).filter_by(category_id = c.id).all()
+        item_dict = []
+        for i in items:
+            item_dict.append(i.serialize)
+        new_cat['Items'] = item_dict
+        finished_dict.append(new_cat)
+    return finished_dict
 
 # implement Cross Site Request Forgery protection from flask_wtf
 csrf = CsrfProtect()
