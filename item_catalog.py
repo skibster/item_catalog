@@ -37,7 +37,7 @@ def showCatalog():
 @app.route('/catalog/json')
 def jsonCatalog():
     js = MakeDictionary()
-    return jsonify(Categories=js)
+    return jsonify(Category=js)
 # def jsonCatalog():
 #     js = MakeDictionary()
 #     return Response(json.dumps(js, indent=4, separators=(',', ': ')),  mimetype='application/json')
@@ -171,7 +171,7 @@ def MakeDictionary():
         item_dict = []
         for i in items:
             item_dict.append(i.serialize)
-        new_cat['Items'] = item_dict
+        new_cat['Item'] = item_dict
         finished_dict.append(new_cat)
     return finished_dict
 
