@@ -1,3 +1,7 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+
 <div class = 'flash'>
   {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -9,18 +13,21 @@
     {% endif %}
   {% endwith %}
 </div>
-<div>
-  {% for c in categories %}
-    <a href='/catalog/{{c.name}}/items'>{{c.name}}</a>
-  {% endfor %}
+
+<div class="row">
+  <div class="col-md-4 right-vert-rule">
+    <h2><a class="btn btn-custom-big" href="/" role="button">Categories/Latest</a></h2>
+    {% for c in categories %}
+      <a href='/catalog/{{c.name}}/items'>{{c.name}}</a><br/>
+    {% endfor %}
+  </div>
+  <div class="col-md-8 listing">
+    <h2>Category: {{category_name}} ({{item_count}})</h2>
+    <a href="/catalog/{{category_name}}/new">Add Item</a><br/>
+    {% for i, c in items %}
+      <a href='/catalog/{{c.name}}/{{i.name}}'>{{i.name}}</a><br/>
+    {% endfor %}
+  </div>
 </div>
 
-<h2>Category: {{category_name}} ({{item_count}})</h2>
-<br/>
-
-<div>
-  <a href="/catalog/{{category_name}}/new">Add Item</a>
-  {% for i, c in items %}
-    <a href='/catalog/{{c.name}}/{{i.name}}'>{{i.name}}</a>
-  {% endfor %}
-</div>
+{% endblock %}
