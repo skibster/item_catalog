@@ -1,11 +1,28 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
 {% from "_formhelpers.html" import render_field %}
-<form method="post" action="#" enctype="multipart/form-data">
-  {{ form.hidden_tag() }}
-  <dl>
-    {{ render_field(form.name) }}
-    {{ render_field(form.description) }}
-    {{ render_field(form.photo) }}
-    {{ render_field(form.category) }}
-  </dl>
-  <input type="submit" value="Create"> | <a href='/catalog/{{category_name}}/items'>Cancel</a>
-</form>
+
+<div class="row">
+  <div class="col-md-4">
+    <h2>{{category_name}}
+  </div>
+ 	<div class="col-md-8 left-vert-rule">
+    <form method="post" action="#" enctype="multipart/form-data">
+  	  {{ form.hidden_tag() }}
+  	  <dl>
+  	    {{ render_field(form.name) }}
+  	    {{ render_field(form.description) }}
+  	    {{ render_field(form.photo) }}
+  	    {{ render_field(form.category) }}
+  	  </dl>
+  	  <input type="submit" value="Create"><span class="divider"> | </span><a href='/catalog/{{category_name}}/items'>Cancel</a>
+  	</form>
+  </div>
+</div>
+
+<script type="text/javascript">
+  document.getElementById("name").focus();
+</script>
+
+{% endblock %}

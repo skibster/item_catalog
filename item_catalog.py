@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """item_catalog.py generates a Python Flask website for Udacity's Full Stack Web Developer Nanodegree Project 3"""
 
 import os
@@ -85,7 +88,7 @@ def createItem(category_name):
         db_session.commit()
 
         category = db_session.query(Category).filter_by(id=request.form['category']).one()
-        flash('New item: %s has been created.' % newItem.name)
+        flash(u"“%s” has been successfully created." % newItem.name)
         return redirect(url_for('showCategory', category_name=category.name))
     return render_template('createItem.html', form=form, category_name=category_name)
 
@@ -122,6 +125,7 @@ def editItem(item_name):
         db_session.add(item)
         db_session.commit()
         category = db_session.query(Category).filter_by(id=request.form['category']).one()
+        flash(u"“%s” has been successfully edited." % item.name)
         return redirect(url_for('showCategory', category_name=category.name))
     return render_template('editItem.html', form=form, item=item, item_name=item_name, category_name=category.name)
 
@@ -139,9 +143,9 @@ def deleteItem(item_name):
             os.removedirs(old_dir)
         db_session.delete(item)
         db_session.commit()
-        flash('Your item has been deleted.')
+        flash(u"“%s” has been succesfully deleted." % item.name)
         return redirect(url_for('showCategory', category_name=category.name))
-    return render_template('deleteItem.html', item_name=item_name, category_name=category.name)
+    return render_template('deleteItem.html', item_name=(u"“%s”" % item_name), item=item, category_name=category.name)
 
 """This route shows details about a single item."""
 @app.route('/catalog/<string:category_name>/<string:item_name>', methods=['GET'])

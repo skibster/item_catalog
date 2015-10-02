@@ -2,18 +2,6 @@
 {% block content %}
 {% include "header.html" %}
 
-<div class = 'flash'>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li> <strong> {{ message }} </strong> </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-</div>
-
 <div class="row">
   <div class="col-md-4 right-vert-rule">
     <h2>Categories</h2>
@@ -22,8 +10,7 @@
     {% endfor %}
   </div>
   <div class="col-md-8 listing">
-    <h2>Category: {{category_name}} ({{item_count}})</h2>
-    <a href="/catalog/{{category_name}}/new">Add Item</a><br/>
+    <h2>Category: {{category_name}} <em>({{item_count}} items)</em></h2> 
     {% for i, c in items %}
       <a href='/catalog/{{c.name}}/{{i.name}}'>{{i.name}}</a><br/>
     {% endfor %}
