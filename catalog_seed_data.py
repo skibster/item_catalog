@@ -15,8 +15,9 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 # Add Base Categories
-for name in ["Soccer", "Basketball", "Baseball", "Frisbee", "Snowboarding",
-             "Rock Climbing", "Foosball", "Skating", "Hockey"]:
+names = ["Soccer", "Basketball", "Baseball", "Frisbee", "Snowboarding",
+         "Rock Climbing", "Foosball", "Skating", "Hockey"]
+for name in names:
     newCategory = Category(name=name)
     session.add(newCategory)
 session.commit()
