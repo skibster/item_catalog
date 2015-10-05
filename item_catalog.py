@@ -5,7 +5,7 @@
 
 import os
 import json, dicttoxml
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, session, Response
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, Response
 
 from flask_wtf.csrf import CsrfProtect
 from wt_form_functions import createItemForm, editItemForm
@@ -46,7 +46,10 @@ MISSING_IMAGE = 'static/missing_image.png'
 def showCatalog():
     categories = db_session.query(Category).order_by(asc(Category.name))
     last_items = db_session.query(Item, Category).filter(Item.category_id==Category.id).order_by(desc(Item.last_updated)).limit(10)
-    return render_template('showCatalog.html', categories=categories, last_items=last_items )
+    if 'username' not in session:
+        return render_template('showCatalogPublic.html', categories=categories, last_items=last_items )
+    else:
+        return render_template('showCatalog.html', categories=categories, last_items=last_items )
 
 """This route is the root of the web application and returns each catalog category with all of its items in JSON."""
 @app.route('/catalog/json')
@@ -66,7 +69,6 @@ def showCategory(category_name):
     categories = db_session.query(Category).order_by(asc(Category.name))
     category = db_session.query(Category).filter_by(name=category_name).one()
     items = db_session.query(Item, Category).filter(Item.category_id==Category.id).filter_by(category_id=category.id)
-
     return render_template('showCategory.html', categories = categories, category_name=category_name, items=items, item_count=items.count() )
 
 """This route allows a user to create a new item for a given category."""
@@ -74,6 +76,8 @@ def showCategory(category_name):
 def createItem(category_name):
     # if item_name.lower() == 'items':
     #     return "Items is a reserved word for this application. You cannot use it as the name of an item."
+    if 'username' not in session:
+        return redirect('/catalog/login')
     categories = db_session.query(Category).order_by(asc(Category.name))
     category = db_session.query(Category).filter_by(name=category_name).one()
     form = createItemForm(category=category.id)
@@ -82,7 +86,8 @@ def createItem(category_name):
     if request.method == 'POST' and form.validate_on_submit():
         newItem = Item( name=request.form['name'],
                         description = request.form['description'],
-                        category_id = request.form['category'])
+                        category_id = request.form['category'],
+                        user_id=session['user_id'])
         db_session.add(newItem)
         db_session.commit()
 
@@ -107,9 +112,12 @@ def createItem(category_name):
 """This route allows a user to edit a specific item they created."""
 @app.route('/catalog/<string:item_name>/edit', methods=['GET', 'POST'])
 def editItem(item_name):
+    if 'username' not in session:
+        return redirect('/catalog/login')
     categories = db_session.query(Category).order_by(asc(Category.name))    
-    #item = db_session.query(Item, Category).filter(Item.category_id==Category.id).filter_by(name=item_name).one()
     item = db_session.query(Item).filter_by(name=item_name).one()
+    if item.user_id != session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to edit this item. You may only edit items that you made under your user account.');}</script><body onload='myFunction()'>"
     category = db_session.query(Category).filter_by(id=item.category_id).one()
     form = editItemForm(name=item.name,
                         description=item.description,
@@ -144,9 +152,12 @@ def editItem(item_name):
 """This route allows a user to delete a specific item they created."""
 @app.route('/catalog/<string:item_name>/delete', methods=['GET', 'POST'])
 def deleteItem(item_name):
+    if 'username' not in session:
+        return redirect('/catalog/login')
     item = db_session.query(Item).filter_by(name=item_name).one()
     category = db_session.query(Category).filter_by(id=item.category_id).one()
-
+    if item.user_id != session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to delete this item. You may only delete items that you made under your user account.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
         old_image = item.image_url
         if old_image != MISSING_IMAGE:
@@ -163,19 +174,11 @@ def deleteItem(item_name):
 @app.route('/catalog/<string:category_name>/<string:item_name>', methods=['GET'])
 def showItem(category_name, item_name):
     item = db_session.query(Item).filter_by(name=item_name).one()
-    return render_template('showItem.html', item=item, category_name=category_name)
-
-"""This route handles logging in the user using the Google OAuth API."""
-@app.route('/catalog/login')
-def login():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
-    session['state'] = state
-    return render_template('login.html', STATE=state)
-
-"""This route handles logging out the user using the Google OAuth API."""
-@app.route('/catalog/logout/')
-def logout():
-    return "This page will process the oAuth logoff."
+    creator = getUserInfo(item.user_id)
+    if 'username' not in session or creator.id != session['user_id']:
+        return render_template('showItemPublic.html', item=item, category_name=category_name)
+    else:
+        return render_template('showItem.html', item=item, category_name=category_name)
 
 def MakeDictionary():
     categories = db_session.query(Category).all()
@@ -193,14 +196,20 @@ def MakeDictionary():
 # implement Cross Site Request Forgery protection from flask_wtf
 csrf = CsrfProtect()
 
+"""This route handles logging in the user using the Google OAuth API."""
+@app.route('/catalog/login')
+def login():
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    session['state'] = state
+    return render_template('login.html', STATE=state)
+
 @csrf.exempt
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
     if request.args.get('state') != session['state']:
-        response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        flash('Login unsuccessful. Invalid state parameter.')
+        return redirect(url_for('showCatalog'))
     # Obtain authorization code
     code = request.data
 
@@ -210,10 +219,8 @@ def gconnect():
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        response = make_response(
-            json.dumps('Failed to upgrade the authorization code.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        flash('Login unsuccessful. Failed to upgrade the authorization code.')
+        return redirect(url_for('showCatalog'))
 
     # Check that the access token is valid.
     access_token = credentials.access_token
@@ -223,32 +230,25 @@ def gconnect():
     result = json.loads(h.request(url, 'GET')[1])
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
-        response = make_response(json.dumps(result.get('error')), 500)
-        response.headers['Content-Type'] = 'application/json'
+        flash('Login unsuccessful. %s' % result.get('error'))
+        return redirect(url_for('showCatalog'))
 
     # Verify that the access token is used for the intended user.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
-        response = make_response(
-            json.dumps("Token's user ID doesn't match given user ID."), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        flash("Login unsuccessful. Token user's ID does not match given user ID.")
+        return redirect(url_for('showCatalog'))
 
     # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
-        response = make_response(
-            json.dumps("Token's client ID does not match app's."), 401)
-        print "Token's client ID does not match app's."
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        flash("Login unsuccessful. Token client's ID does not app's ID.")
+        return redirect(url_for('showCatalog'))
 
     stored_credentials = session.get('credentials')
     stored_gplus_id = session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        flash("You are already logged in.")
+        return redirect(url_for('showCatalog'))
 
     # Store the access token in the session for later use.
     session['credentials'] = credentials.to_json()
@@ -265,16 +265,61 @@ def gconnect():
     session['picture'] = data['picture']
     session['email'] = data['email']
 
-    output = ''
-    output += '<h1>Welcome, '
-    output += session['username']
-    output += '!</h1>'
-    output += '<img src="'
-    output += session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("You are now logged in as %s" % session['username'])
-    print "done!"
-    return output
+    user_id =getUserID(session['email'])
+    if not user_id:
+        user_id = createUser(session)
+    session['user_id'] = user_id
+
+    flash("You are now logged in, %s" % session['username'])
+    return " "
+
+"""This route handles logging out the user using the Google OAuth API."""
+@app.route('/catalog/logout')
+def logout():
+    # Only disconnect a connected user.
+    if 'credentials' in session:
+        print 'yes!'
+        credentials = json.loads(session['credentials'])
+        if credentials is None:
+            flash("Current user not connected.")
+            return redirect(url_for('showCatalog'))
+        access_token = credentials['access_token']
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[0]
+        if result['status'] == '200':
+            # Reset the user's sesson.
+            flash("%s, successfully logged out" % session['username'])
+            del session['credentials']
+            del session['gplus_id']
+            del session['username']
+            del session['user_id']
+            return redirect(url_for('showCatalog'))
+        else:
+            # For whatever reason, the given token was invalid.
+            flash("Failed to revoke token for user. You are still logged in.")
+            return redirect(url_for('showCatalog'))
+    else:
+        return redirect(url_for('showCatalog'))
+
+def createUser(session):
+    newUser = User(name=session['username'], email=session[
+                   'email'], picture=session['picture'])
+    db_session.add(newUser)
+    db_session.commit()
+    user = db_session.query(User).filter_by(email=session['email']).one()
+    return user.id
+
+def getUserInfo(user_id):
+    user = db_session.query(User).filter_by(id=user_id).one()
+    return user
+
+def getUserID(email):
+    try:
+        user = db_session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
 if __name__ == '__main__':
     app.secret_key = '\r\x94b\xf3\xa5\xa5\x15\x13o\xa0DB\xa0m\x0e\xf1i\xa4"\xfeEW&W\xba\xc9Ko\x93'

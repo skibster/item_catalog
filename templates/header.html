@@ -4,7 +4,11 @@
   </div>
   <div class="col-md-6 text-right">
     <a class="btn btn-custom" href="{{url_for('showCatalog')}}" role="button">Home</a>
-    <a class="btn btn-custom" href="{{url_for('login')}}" role="button">Login</a>
+    {% if 'username' not in session %}
+      <a class="btn btn-custom" href="{{url_for('login')}}" role="button">Login</a>
+    {% else %}
+      <a class="btn btn-custom" href="{{url_for('logout')}}" role="button">Logout</a>
+    {% endif %}
   </div>
 </div>
 <div class="row">
