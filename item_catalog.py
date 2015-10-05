@@ -41,7 +41,7 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
 
-MISSING_IMAGE = 'static/missing_image.png'
+MISSING_IMAGE = 'static/uploads/missing_image.png'
 
 
 @app.route('/')
