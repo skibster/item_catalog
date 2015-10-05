@@ -138,9 +138,7 @@ def editItem(item_name):
     categories = db_session.query(Category).order_by(asc(Category.name))
     item = db_session.query(Item).filter_by(name=item_name).one()
     if item.user_id != session['user_id']:
-        return """<script>function myFunction() {alert('You are not authorized
-        to edit this item. You may only edit items that you made under your
-        user account.');}</script><body onload='myFunction()'>"""
+        return "<script>function myFunction() {alert('You are not authorized to edit this item. You may only edit items that you made under your user account.');}</script><body onload='myFunction()'>"
     category = db_session.query(Category).filter_by(id=item.category_id).one()
     form = editItemForm(name=item.name,
                         description=item.description,
@@ -183,9 +181,7 @@ def deleteItem(item_name):
     item = db_session.query(Item).filter_by(name=item_name).one()
     category = db_session.query(Category).filter_by(id=item.category_id).one()
     if item.user_id != session['user_id']:
-        return """<script>function myFunction() {alert('You are not authorized
-        to delete this item. You may only delete items that you made under
-        your user account.');}</script><body onload='myFunction()'>"""
+        return "<script>function myFunction() {alert('You are not authorized to delete this item. You may only delete items that you made under your user account.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
         old_image = item.image_url
         if old_image != MISSING_IMAGE:
