@@ -20,7 +20,7 @@ The Catalog app should be up and running.
 Features of Catalog App:
 
 1. Users can browse the items in the categories. Initially, there will not be items until users add them.
-2. Logged in users can authenticate using Google Plus's oAuth API. Once authenticated, users are able to add items (including images), edit and delete items to the Categories. As users add, edit and delete their entries, the web application is built to protected them against Cross-Site Request Forgery (CSRF) attacks.
+2. Logged in users can authenticate using Google Plus's oAuth API. Once authenticated, users are able to add items (including images), edit and delete items to the Categories. As users add, edit and delete their entries, the web application is built to protect them against Cross-Site Request Forgery (CSRF) attacks.
 3. In addition to the web browser user interface, several API endpoints are available in both JSON and XML to retrieve the contents of the catalog.
   * For a JSON response, make a GET request to URL: http://localhost:8000/catalog/json
   * For an XML response, make a GET request to URL: http://localhost:8000/catalog/xml
